@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+
+  accounts:
+    image: tulsikant/accounts:latest
+    mem_limit: 700m
+    ports:
+      - "8080:8080"
+    networks:
+      - tulsikantbank-network
+    
+  loans:
+    image: tulsikant/loans:latest
+    mem_limit: 700m
+    ports:
+      - "8090:8090"
+    networks:
+      - tulsikantbank-network
+    
+  cards:
+    image: tulsikant/cards:latest
+    mem_limit: 700m
+    ports:
+      - "9000:9000"
+    networks:
+      - tulsikantbank-network
+    
+networks:
+  tulsikantbank-network:
