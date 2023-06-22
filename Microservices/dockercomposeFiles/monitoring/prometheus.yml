@@ -1,0 +1,24 @@
+#A configuration file for prometheus to indicate from where to pick up the metrics, placed with docker-compose yaml in local. 
+global:
+  scrape_interval:     5s # Set the scrape interval to every 5 seconds.
+  evaluation_interval: 5s # Evaluate rules every 5 seconds.
+scrape_configs:
+    #Each job represents each microservice
+  - job_name: 'accounts'
+    #Collect metrics from accounts application /actuator/prometheus
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+    #service url is accounts:8080 after gatewayserver
+    - targets: ['accounts:8080']
+  - job_name: 'loans'
+    #Collect metrics from loans application /actuator/prometheus
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+    #service url is loans:8080 after gatewayserver
+    - targets: ['loans:8090']
+  - job_name: 'cards'
+    #Collect metrics from cards application /actuator/prometheus
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+    #service url is cards:8080 after gatewayserver
+    - targets: ['cards:9000']

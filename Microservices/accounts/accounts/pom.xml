@@ -88,16 +88,21 @@
 		</dependency>
 		<dependency>
 		    <groupId>io.micrometer</groupId>
-		    <artifactId>micrometer-registry-prometheus</artifactId>
-		</dependency>
-		<dependency>
-		    <groupId>io.micrometer</groupId>
 		    <artifactId>micrometer-tracing-bridge-otel</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>io.opentelemetry</groupId>
 		    <artifactId>opentelemetry-exporter-zipkin</artifactId>
-		</dependency>		
+		</dependency>
+		<!--Mircrometer and Prometheus-->
+		<dependency>
+		    <groupId>io.micrometer</groupId>
+		    <artifactId>micrometer-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-prometheus</artifactId>
+		</dependency>					
 		<!--Micrometer and Zipkin Dependencies-->
 		<!-- Spring Cloud Sleuth for cliud <= 2022.0.0 
 		<dependency>

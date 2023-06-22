@@ -9,6 +9,7 @@ This repository contains below mentioned related notes and Practices.
 6. Resilience4j (Circuit Breaker, Retry, Rate Limiter and Bulk Head Pattern)
 7. Spring Cloud Gateway
 8. Distributed Logging using Spring Cloud Sleuth/Micro meter and Zipkin
+9. Setting up alerting systems using Micro meter, Prometheus and Grafana.
 
 # Udemy_Learning
 https://www.udemy.com/course/master-microservices-with-spring-docker-kubernetes/

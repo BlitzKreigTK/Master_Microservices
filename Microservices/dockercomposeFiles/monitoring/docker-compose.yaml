@@ -1,0 +1,185 @@
+version: "3.8"
+
+services:
+  #Creating service for grafana
+  grafana:
+    image: "grafana/grafana:latest"
+    ports:
+      - "3000:3000"
+    #Custom Credentials  
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=password
+    networks:
+     - ecommbank
+    depends_on:
+      - prometheus  
+  #Creating a service for prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    #Create a volume where copy the prometheus.yml from local to container file system /etc/prometheus/prometheus.yml
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - ecommbank
+  #Creating a service for Zipkin service  
+  zipkin:
+    image: openzipkin/zipkin
+    mem_limit: 700m
+    ports:
+      - "9411:9411"
+    networks:
+     - ecommbank
+  #Creating a service for CMS server
+  configserver:
+    image: tulsikant/configserver:latest
+    mem_limit: 700m
+    ports:
+      - "8071:8071"
+    networks:
+     - ecommbank
+    #Depends on Zipkin to first start 
+    depends_on:
+      - zipkin
+    environment:
+      SPRING_PROFILES_ACTIVE: default
+      # SPRING_ZIPKIN_BASEURL: http://zipkin:9411/
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans     
+  #Creating a service for EurekaServer server 
+  eurekaserver:
+    image: tulsikant/eurekaserver:latest
+    mem_limit: 700m
+    ports:
+      - "8070:8070"
+    networks:
+     - ecommbank
+    depends_on:
+      - configserver
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 15s
+        max_attempts: 3
+        window: 120s
+    environment:
+      SPRING_APPLICATION_NAME: eurekaserver
+      SPRING_PROFILES_ACTIVE: default
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+      # SPRING_ZIPKIN_BASEURL: http://zipkin:9411/
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans      
+  #Creating a service for account application    
+  accounts:
+    image: tulsikant/accounts:latest
+    mem_limit: 700m
+    ports:
+      - "8080:8080"
+    networks:
+      - ecommbank
+    #depends on CMS and EurekaServer thats why first make sure CMS is up then start accounts application  
+    depends_on:
+      - configserver
+      - eurekaserver
+    #Restart policy defined in case of any condition on failure wait for 5s and max retry to restart 3 times with a window of 120s 
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    #Properties of yaml will be override over internal code properties   
+    environment:
+      SPRING_APPLICATION_NAME: accounts
+      SPRING_PROFILES_ACTIVE: default
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
+      # SPRING_ZIPKIN_BASEURL: http://zipkin:9411/
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
+  #Creating a service for loans application
+  loans:
+    image: tulsikant/loans:latest
+    mem_limit: 700m
+    ports:
+      - "8090:8090"
+    networks:
+      - ecommbank
+    #depends on CMS and EurekaServer thats why first make sure CMS is up then start loans application  
+    depends_on:
+      - configserver
+      - eurekaserver
+    #Restart policy defined in case of any condition on failure wait for 5s and max retry to restart 3 times with a window of 120s    
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    #Properties of yaml will be override over internal code properties    
+    environment:
+      SPRING_APPLICATION_NAME: loans
+      SPRING_PROFILES_ACTIVE: default
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
+      # SPRING_ZIPKIN_BASEURL: http://zipkin:9411/
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans      
+  #Creating a service for cards application  
+  cards:
+    image: tulsikant/cards:latest
+    mem_limit: 700m
+    ports:
+      - "9000:9000"
+    networks:
+      - ecommbank
+    #depends on CMS thats why first make sure CMS is up then start cards application  
+    depends_on:
+      - configserver
+      - eurekaserver
+    #Restart policy defined in case of any condition on failure wait for 5s and max retry to restart 3 times with a window of 120s 
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    #Properties of yaml will be override over internal code properties    
+    environment:
+      SPRING_APPLICATION_NAME: cards
+      SPRING_PROFILES_ACTIVE: default
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
+      # SPRING_ZIPKIN_BASEURL: http://zipkin:9411/
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans      
+  #Gatewayserver service configuration added at last as it needs to register with Eurekaserver once its up    
+  gatewayserver:
+    image: tulsikant/gatewayserver:latest
+    mem_limit: 700m
+    ports:
+      - "8072:8072"
+    networks:
+      - ecommbank
+    #depends on CMS, Eureka, cards, loans, accounts  
+    depends_on:
+      - configserver
+      - eurekaserver
+      - cards
+      - loans
+      - accounts
+    #Restart policy defined in case of any condition on failure wait for 45s and max retry to restart 3 times with a window of 180s   
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 45s
+        max_attempts: 3
+        window: 180s
+    #Properties of yaml will be override over internal code properties     
+    environment:
+      SPRING_APPLICATION_NAME: gatewayserver
+      SPRING_PROFILES_ACTIVE: default
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/ 
+      # SPRING_ZIPKIN_BASEURL: http://zipkin:9411/
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans      
+#Created a common network for all services      
+networks:
+  ecommbank:
