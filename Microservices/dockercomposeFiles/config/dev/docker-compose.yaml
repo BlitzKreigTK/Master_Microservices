@@ -1,0 +1,84 @@
+version: "3.8"
+
+#Creating a service for CMS server
+services:
+  #Creating a service for CMS server 
+  configserver:
+    image: tulsikant/configserver:latest
+    mem_limit: 700m
+    ports:
+      - "8071:8071"
+    networks:
+     - ecommbank
+  #Creating a service for account application    
+  accounts:
+    image: tulsikant/accounts:latest
+    mem_limit: 700m
+    ports:
+      - "8080:8080"
+    networks:
+      - ecommbank
+    #depends on CMS thats why first make sure CMS is up then start accounts application  
+    depends_on:
+      - configserver
+    #Restart policy defined in case of any condition on failure wait for 5s and max retry to restart 3 times with a window of 120s 
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    #Properties of yaml will be override over internal code properties   
+    environment:
+      SPRING_APPLICATION_NAME: accounts
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+  #Creating a service for loans application
+  loans:
+    image: tulsikant/loans:latest
+    mem_limit: 700m
+    ports:
+      - "8090:8090"
+    networks:
+      - ecommbank
+    #depends on CMS thats why first make sure CMS is up then start loans application  
+    depends_on:
+      - configserver
+    #Restart policy defined in case of any condition on failure wait for 5s and max retry to restart 3 times with a window of 120s    
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    #Properties of yaml will be override over internal code properties    
+    environment:
+      SPRING_APPLICATION_NAME: loans
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+  #Creating a service for cards application  
+  cards:
+    image: tulsikant/cards:latest
+    mem_limit: 700m
+    ports:
+      - "9000:9000"
+    networks:
+      - ecommbank
+    #depends on CMS thats why first make sure CMS is up then start cards application  
+    depends_on:
+      - configserver
+    #Restart policy defined in case of any condition on failure wait for 5s and max retry to restart 3 times with a window of 120s 
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    #Properties of yaml will be override over internal code properties    
+    environment:
+      SPRING_APPLICATION_NAME: cards
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+#Created a common network for all services      
+networks:
+  ecommbank:

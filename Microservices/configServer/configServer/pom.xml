@@ -26,7 +26,38 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-config-server</artifactId>
 		</dependency>
-
+		<!--Micrometer and Zipkin Dependencies-->
+		<dependency>
+		    <groupId>io.github.openfeign</groupId>
+		    <artifactId>feign-micrometer</artifactId>
+		</dependency>
+		<dependency>
+		    <groupId>io.micrometer</groupId>
+		    <artifactId>micrometer-registry-prometheus</artifactId>
+		</dependency>
+		<dependency>
+		    <groupId>io.micrometer</groupId>
+		    <artifactId>micrometer-tracing-bridge-otel</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.opentelemetry</groupId>
+		    <artifactId>opentelemetry-exporter-zipkin</artifactId>
+		</dependency>		
+		<!--Micrometer and Zipkin Dependencies-->
+		<!-- Spring Cloud Sleuth for cliud <= 2022.0.0 
+		<dependency>
+			  <groupId>org.springframework.cloud</groupId>
+			  <artifactId>spring-cloud-starter-sleuth</artifactId>
+		</dependency>
+		<dependency>
+			  <groupId>org.springframework.cloud</groupId>
+			  <artifactId>spring-cloud-sleuth-zipkin</artifactId>
+		</dependency> 
+		<dependency>	
+		  	<groupId>org.springframework.amqp</groupId>
+		  	<artifactId>spring-rabbit</artifactId>
+		</dependency>		
+		-->	
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
@@ -50,10 +81,6 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
 					<image>
 						<name>tulsikant/${project.artifactId}</name>
@@ -62,5 +89,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
 </project>
